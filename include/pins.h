@@ -14,6 +14,9 @@ int const YawPin = 15;
 int const SCLpin = 19;
 int const SDApin = 18;
 
+#define I2C_SCL SCLpin
+#define I2C_SDA SDApin
+
 // Indicator Pins
 
 int const BlueLED = 4;
