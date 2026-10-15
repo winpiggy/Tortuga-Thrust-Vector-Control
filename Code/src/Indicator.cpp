@@ -3,7 +3,21 @@
 
 LED::LED() {
 
+   *this = LED(BlueLED);
+
+   *this = LED(WhiteLED);
+
+
+
+   
+
 
 
     
+}
+
+Buzzer::Buzzer() {
+
+   *this = Buzzer(BuzzerPin);
+
 }

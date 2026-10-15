@@ -5,30 +5,23 @@
 #include <Arduino.h>
 #include "pins.h"
 #include <time.h>
+#include "Setup.h"
 
 class PID{
 
     private:
-
-    // Tunable gains
-
-    float kp, ki, kd;
-
-    // Servo constraints
-
-    float min_pitch = 0.0f;
-    float max_pitch = 45.0f;
-    float min_yaw = 0.0f;
-    float max_yaw = 45.0f;
-
-    // More variables
+    
+    static const float kp = 2.0f;
+    static const float ki = 0.5f;
+    static const float kd = 1.0f;
+    static const float saturation = 45.0f;
 
     float setpoint = 0.0f;          // target value the PID drives the input toward
     float error = 0.0f;             // setpoint - input
     float saturation = 0.0f;        // output is limited to +/- this value
     float deltaTime = 0.0f;         // seconds since last update
-    float errorIntegral = 0.0f;     // accumulated error over time (I term state)
-    float errorDerivative = 0.0f;   // rate of change of the input (D term)
+    float errorIntegral;     // accumulated error over time (I term state)
+    float errorDerivative;   // rate of change of the input (D term)
 
     float lastInput = 0.0f;         // previous measurement, for the derivative
     float lastOutput = 0.0f;        // previous output, reused if deltaTime == 0

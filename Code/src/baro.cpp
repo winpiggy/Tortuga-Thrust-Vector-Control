@@ -1,6 +1,7 @@
 #include "baro.h"
+#include "setup.h"
 
-static const float seaLevelPressure = 1013.25f; // hPa
+
 
 bool BME::begin()
 {

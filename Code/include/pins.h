@@ -21,7 +21,7 @@ int const SDApin = 18;
 
 int const BlueLED = 4;
 int const WhiteLED = 13;
-int const Buzzer = 3;
+int const BuzzerPin = 3;
 
 
 

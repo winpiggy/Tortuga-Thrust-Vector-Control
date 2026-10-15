@@ -62,10 +62,10 @@ float PID::update(float input) {
         errorDerivative = constrain(errorDerivative, -saturation / kd, saturation / kd);
     }
 
-    // Combine the three terms:
-    //   P: reacts to the current error
-    //   I: reacts to accumulated past error
-    //   D: reacts to how fast the measurement is changing (damping)
+    // Add the three terms:
+    //   P reacts to the current error
+    //   I reacts to accumulated past error
+    //   D reacts to how fast the measurement is changing 
     float output = kp * error + ki * errorIntegral + kd * errorDerivative;
 
     // Final clamp to the actuator's allowed range; remember it for the
