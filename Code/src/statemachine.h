@@ -24,13 +24,10 @@ class StateMachine {
     State currentState = State::IDLE;
 
    
-    bool LandedDetected = false;
-    bool UprightDetected = false;
-
 
     public:
 
-    const float altitudeThreshold = 10.0f; // Altitude threshold for state transitions (in meters)
+
 
     explicit StateMachine(IMU &imuRef) : imu(imuRef) {}
 
@@ -39,6 +36,9 @@ class StateMachine {
     void updateState(float altitude, float pitch, float yaw, bool launchDetected, bool landedDetected, bool uprightDetected);
     
     bool isLaunchDetected();
+    bool isLandedDetected();
+    bool isUprightDetected();
+
 
     
 };

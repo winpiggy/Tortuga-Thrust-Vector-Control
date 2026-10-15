@@ -50,5 +50,16 @@ bool StateMachine::isLaunchDetected() {
     } else {
         return false;
     }
-}
+};
+
+bool StateMachine::isUprightDetected() {
+    float ax, ay, az;
+    imu.getAcceleration(ax, ay, az);  
+    // Check if the rocket is upright based on the accelerometer readings
+    if (currentState == State::IDLE && ax < 0.1f && ax > -0.1f && ay < 0.1f && ay > -0.1f) { // Assuming z-axis points upwards
+        return true;
+    } else {
+        return false;
+    }
+};
 

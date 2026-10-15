@@ -10,15 +10,14 @@
 class PID{
 
     private:
-    
-    static const float kp = 2.0f;
-    static const float ki = 0.5f;
-    static const float kd = 1.0f;
-    static const float saturation = 45.0f;
+
+    float kp = 0.0f;
+    float ki = 0.0f;
+    float kd = 0.0f;          // PID coefficients
+    float saturation = 0.0f;        // output is limited to +/- this value
 
     float setpoint = 0.0f;          // target value the PID drives the input toward
-    float error = 0.0f;             // setpoint - input
-    float saturation = 0.0f;        // output is limited to +/- this value
+    float error = 0.0f;         
     float deltaTime = 0.0f;         // seconds since last update
     float errorIntegral;     // accumulated error over time (I term state)
     float errorDerivative;   // rate of change of the input (D term)
