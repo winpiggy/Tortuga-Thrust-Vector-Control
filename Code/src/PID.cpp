@@ -1,12 +1,43 @@
 #include "PID.h"
 #include "TVC_Controller.h"
 
+
+    void PID::setTunings(float kp, float ki, float kd, float saturation){
+
+    if  (kp < 0 || ki < 0 || kd < 0 || saturation < 0) {
+        // Handle error: negative values are not allowed
+        return;
+    }
+
+    if (ki > 0.0f && this->ki > 0.0f){
+        
+        float oldErrorIntegral = getErrorIntegral();
+        errorIntegral = oldErrorIntegral * this->ki / ki; // Adjust integral term 
+
+    }
+    this->kp = kp;
+    this->ki = ki;
+    this->kd = kd;
+    this->saturation = saturation;
+    
+}
+
+
+
+
+
+
+
+
 PID::PID(float kp, float ki, float kd, float saturation) {
     this->kp = kp;
     this->ki = ki;
     this->kd = kd;
     this->saturation = saturation;   // max magnitude of the output (+/-)
+
 }
+
+
 
 // Call this once per control loop with the latest measurement (e.g. pitch angle).
 // Returns the correction to send to the actuator, limited to +/- saturation.
@@ -72,4 +103,7 @@ float PID::update(float input) {
     // deltaTime == 0 case above.
     lastOutput = constrain(output, -saturation, saturation);
     return lastOutput;
+
+
+
 }
