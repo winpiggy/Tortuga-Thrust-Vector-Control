@@ -6,6 +6,8 @@
 #include <Adafruit_MPU6050.h>
 #include "IMU.h"
 #include "baro.h"
+#include "gimbal.h"
+#include <SD.h>
 
 
 void setup() {
@@ -47,11 +49,20 @@ void setup() {
         }
     }
 
+    // Start SD
+
+    SD.begin(BUILTIN_SDCARD);
+    File logFile = SD.open("flightlog.txt", FILE_WRITE);
+    if (!logFile) {
+        Serial.println("Failed to create log file");
+    }
+
 }
 
 void loop(){
 
     // Main code loop
     // Read sensor data, update state machine, control actuators, etc.
+    // Log to SD
     
 }
