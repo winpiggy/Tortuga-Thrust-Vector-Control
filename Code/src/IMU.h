@@ -21,7 +21,6 @@ class IMU {
     void getAcceleration(float &x, float &y, float &z);   // m/s^2
     void getGyroscope(float &x, float &y, float &z);      // rad/s
     float getTemperature();                               // deg C
-
     private:
 
     Adafruit_MPU6050 imu;

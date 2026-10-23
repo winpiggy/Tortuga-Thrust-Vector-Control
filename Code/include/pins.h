@@ -23,8 +23,7 @@ int const BlueLED = 4;
 int const WhiteLED = 13;
 int const BuzzerPin = 3;
 
-//SD card chip select pin
-int const SD_CS_PIN = 5;
+
 
 
 #endif // PINS_H
