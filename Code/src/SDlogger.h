@@ -1,27 +1,35 @@
 #ifndef SDLOGGER_H
 #define SDLOGGER_H
 
-#include "pins.h"
-#include "SD.h"
-#include "setup.h"
+#include <SD.h>
+#include "flight_data.h"
 
 class SDlogger {
 
     private:
 
-        int chipSelect = BUILTIN_SDCARD;
+        int chipSelect;
         File logFile;
-        
+        bool open = false;
+        char fileName[16] = "";
+        unsigned long lastFlush = 0;
+
 
     public:
-        SDlogger(int chipSelectPin);
+        explicit SDlogger(int chipSelectPin = BUILTIN_SDCARD) : chipSelect(chipSelectPin) {}
         bool begin();
 
-        void logData(const String& data);
+        // Opens the next unused flightNN.csv and writes the column header.
+        bool createLogFile();
 
-        int createLogFile(const char* filename);
-        int updateLogFile(const char* filename);
+        void logData(const char* line);
+        void logFlightData(const FlightData &data);
 
+        void flush();
+        void close();
+
+        bool isOpen() const { return open; }
+        const char* getFileName() const { return fileName; }
         int getchipSelectPin() const { return chipSelect; }
 
 };

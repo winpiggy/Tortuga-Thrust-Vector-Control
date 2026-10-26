@@ -1,46 +1,42 @@
 #ifndef STATEMACHINE_H
 #define STATEMACHINE_H
 
-#include "baro.h"
-#include "IMU.h"
-#include "pins.h"
+#include "flight_data.h"
 
-enum State {
-    IDLE,
-    ARMED,
-    LAUNCH,
-    FLIGHT,
-    DESCENT,
-    LANDED
-};
-
-
+// Decides the flight phase from processed sensor data. It never touches hardware,
+// so it can be tested by feeding it FlightData by hand.
 class StateMachine {
 
     private:
 
-    IMU &imu;
-
     State currentState = State::IDLE;
 
-   
+    float groundAltitude = 0.0f;    // pad altitude, tracked while IDLE/ARMED, frozen at launch
+    bool groundSet = false;
+    float relativeAltitude = 0.0f;  // m above the pad
+    float maxAltitude = 0.0f;       // highest relativeAltitude since launch
+
+    // Consecutive-sample counters so one noisy reading can't change state
+    int uprightCount = 0;
+    int launchCount = 0;
+    int apogeeCount = 0;
+    int landedCount = 0;
+
+    bool isUprightDetected(const FlightData &data);
+    bool isLaunchDetected(const FlightData &data);
+    bool isApogeeDetected();
+    bool isLandedDetected(const FlightData &data);
 
     public:
 
-
-
-    explicit StateMachine(IMU &imuRef) : imu(imuRef) {}
-
     StateMachine() = default;
 
-    void updateState(float altitude, float pitch, float yaw, bool launchDetected, bool landedDetected, bool uprightDetected);
-    
-    bool isLaunchDetected();
-    bool isLandedDetected();
-    bool isUprightDetected();
+    // Call once per loop. Returns the (possibly new) state.
+    State update(const FlightData &data);
 
+    State getState() const { return currentState; }
+    float getRelativeAltitude() const { return relativeAltitude; }
 
-    
 };
 
 #endif // STATEMACHINE_H
