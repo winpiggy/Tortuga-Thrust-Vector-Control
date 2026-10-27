@@ -1,4 +1,5 @@
 #include "PID.h"
+#include "TVC_Controller.h"
 
 
     void PID::setTunings(float kp, float ki, float kd, float saturation){
@@ -37,20 +38,12 @@ PID::PID(float kp, float ki, float kd, float saturation) {
 }
 
 
-void PID::reset() {
-    errorIntegral = 0.0f;
-    errorDerivative = 0.0f;
-    lastOutput = 0.0f;
-    initialized = false;
-}
-
-
 
 // Call this once per control loop with the latest measurement (e.g. pitch angle).
 // Returns the correction to send to the actuator, limited to +/- saturation.
 float PID::update(float input) {
 
-    currentTime = micros();
+    currentTime = millis();
 
     // First call: we have no previous timestamp or measurement, so we can't
     // compute a time step or a derivative yet. Just record the starting values
@@ -64,9 +57,9 @@ float PID::update(float input) {
     }
 
     // Time since the last update, in seconds.
-    deltaTime = (currentTime - lastTime) / 1000000.0f;
+    deltaTime = (currentTime - lastTime) / 1000.0f;
 
-    // If called twice within the same microsecond, deltaTime is 0 and the
+    // If called twice within the same millisecond, deltaTime is 0 and the
     // derivative would divide by zero. Reuse the previous output instead.
     if (deltaTime <= 0.0f) {
         return lastOutput;

@@ -1,39 +1,23 @@
-#include <Arduino.h>
+#include "pins.h"
 #include "Indicator.h"
 
-void Indicator::begin() {
-    pinMode(_pin, OUTPUT);
-    off();
+LED::LED() {
+
+   *this = LED(BlueLED);
+
+   *this = LED(WhiteLED);
+
+
+
+   
+
+
+
+    
 }
 
-void Indicator::on() {
-    _blinking = false;
-    write(true);
-}
+Buzzer::Buzzer() {
 
-void Indicator::off() {
-    _blinking = false;
-    write(false);
-}
+   *this = Buzzer(BuzzerPin);
 
-void Indicator::blink(unsigned long intervalMs) {
-    if (_blinking && _interval == intervalMs) {
-        return;
-    }
-    _blinking = true;
-    _interval = intervalMs;
-    _lastUpdate = millis();
-    write(true);
-}
-
-void Indicator::update() {
-    if (_blinking && millis() - _lastUpdate >= _interval) {
-        _lastUpdate = millis();
-        write(!_state);
-    }
-}
-
-void Indicator::write(bool state) {
-    _state = state;
-    digitalWrite(_pin, state ? HIGH : LOW);
 }

@@ -1,11 +1,15 @@
 #include "baro.h"
+#include "setup.h"
 
 
 
 bool BME::begin()
 {
+    // Teensy 4.1 Wire uses fixed pins (SDA=18, SCL=19), see pins.h
+    Wire.begin();
+
     // Most breakouts are 0x76 or 0x77
-    if (!bme.begin(0x77, &Wire) && !bme.begin(0x76, &Wire)) {
+    if (!bme.begin(0x77) && !bme.begin(0x76)) {
         Serial.println("Failed to initialize BME280");
         return false;
     }
@@ -16,8 +20,5 @@ void BME::read(float &temperature, float &pressure, float &altitude)
 {
     temperature = bme.readTemperature();
     pressure = bme.readPressure();
-
-    // Same formula as bme.readAltitude(), but reuses the pressure we just read
-    // instead of doing another I2C transaction every loop.
-    altitude = 44330.0f * (1.0f - powf((pressure / 100.0f) / seaLevelPressure, 0.1903f));
+    altitude = bme.readAltitude(seaLevelPressure);
 }
