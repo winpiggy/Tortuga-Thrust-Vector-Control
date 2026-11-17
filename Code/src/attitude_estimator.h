@@ -57,15 +57,22 @@ class MahonyFilter {
 
     public:
 
+
     IMU& imu; // reference to the IMU instance
 
-    // Find the Angle
-    float calculateAngle(float roll, float pitch);
+     Quaternion getQuaternion() const {
+        return q;
+    }
 
-    MahonyFilter(float kp_, float ki_) : kp(kp_), ki(ki_), q(), eInt{0.0, 0.0, 0.0} {}
+    // Find the angle from the quaternion
+    float roll, pitch, yaw;
 
-    void setKp(float newKp) { kp = newKp; }
-    void setKi(float newKi) { ki = newKi; }
+    float getEulers(float roll, float pitch);
+
+
+    roll  = atan2(2 * (q.getscalar()*q.getq1() + q.getq2()*q.getq3()), 1 - 2 * (q.getq1()*q.getq1() + q.getq2()*q.getq2()));
+    pitch = asin (2 * (q.getscalar()*q.getq2() - q.getq3()*q.getq1()));
+    yaw   = atan2(2 * (q.getscalar()*q.getq3() + q.getq1()*q.getq2()), 1 - 2 * (q.getq2()*q.getq2() + q.getq3()*q.getq3()));
 
 };
 

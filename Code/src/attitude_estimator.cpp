@@ -3,12 +3,25 @@
 #include "IMU.h"
 #include "statemachine.h"
 
-MahonyFilter::MahonyFilter(float kp_, float ki_) : kp(kp_), ki(ki_), q(), eInt{0.0, 0.0, 0.0} {}
+MahonyFilter::MahonyFilter(IMU& imu) : imu(imu) {
+    // Initialize the filter state
+    q0 = 1.0f; // Quaternion representing no rotation
+    q1 = 0.0f;
+    q2 = 0.0f;
+    q3 = 0.0f;
+    integralFBx = 0.0f;
+    integralFBy = 0.0f;
+    integralFBz = 0.0f;
+}
 
-float MahonyFilter::calculateAngle(float roll, float pitch) {
+void MahonyFilter::getEulers(float& roll, float& pitch, float& yaw) {
+    // Calculate the angle based on roll and pitch
+    float ax, ay, az;
+    imu.getAcceleration(ax, ay, az);
 
-    roll = atan2(a.acceleration.y, a.acceleration.z) * 180.0 / PI;
-    pitch = atan2(-a.acceleration.x, sqrt(a.acceleration.y * a.acceleration.y + a.acceleration.z * a.acceleration.z)) * 180.0 / PI;
-    return roll;
-    return pitch;
+
+constexpr float deg2rad = 180.0f / 3.14159265358979323846f;
+    roll = std::atan2(ay, az) * deg2rad;
+    pitch = std::atan2(-ax, std::sqrt(ay * ay + az * az)) * deg2rad;
+    yaw = 0.0f; // Placeholder - implement yaw calculation if needed
 }

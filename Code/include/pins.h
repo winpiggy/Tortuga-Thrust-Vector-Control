@@ -23,7 +23,11 @@ int const BlueLED = 4;
 int const WhiteLED = 13;
 int const BuzzerPin = 3;
 
+// Blueooth Pins
 
+int const TXD = 7;
+int const RXD = 8;
+int const STATE = 22;
 
 
 #endif // PINS_H

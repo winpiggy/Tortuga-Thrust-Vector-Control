@@ -63,6 +63,9 @@ bool StateMachine::isUprightDetected() {
     }
 };
 
-
+if (currentState == State::ASCENT || currentState == State::DESCENT) {
+    float kp = 0.0f; // Proportional gain
+    float ki = 0.0f; // Integral gain
+}
 
 

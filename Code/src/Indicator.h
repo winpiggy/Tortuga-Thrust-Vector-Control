@@ -1,6 +1,6 @@
 #ifndef INDICATOR_H
 #define INDICATOR_H
-
+#include <Arduino.h>
 #include "pins.h"
 
 // Have a blink, turn on, and turn off functionality for each LED
@@ -13,16 +13,19 @@ class LED {
 
     LED();
 
+    int pinBlue = BlueLED;
+    int pinWhite = WhiteLED;
+
     LED(int pin);
-    void on();
-    void off();
-    void blink();
-    void update();
+    void on(int &LEDPin);
+    void off(int &LEDPin);
+    void blink(int &LEDPin, int interval = 500);
 
 private:
     int _pin;
     unsigned long _lastUpdate;
     bool _state;
+    int interval = 500; // Interval for blinking in milliseconds
 };
 
 class Buzzer {
@@ -30,12 +33,11 @@ class Buzzer {
     public:
 
     Buzzer();
-
+    int interval = 500; // Interval for beeping in milliseconds
     Buzzer(int pin);
     void on();
     void off();
     void beep();
-    void update();
 
 private:
     int _pin;
