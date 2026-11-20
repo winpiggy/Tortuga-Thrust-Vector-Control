@@ -3,7 +3,6 @@
 
 #include "pins.h"
 #include "IMU.h"
-#include "statemachine.h"
 
 
 
@@ -46,33 +45,37 @@ class Quaternion {
 
 };
 
+// Mahony filter: integrates the gyro to track orientation, and (when kp/ki > 0)
+// nudges the estimate toward the gravity direction seen by the accelerometer
+// to cancel gyro drift. Assumes the IMU z axis points up the rocket.
 class MahonyFilter {
 
     private:
 
-    float kp; // proportional gain
-    float ki; // integral gain
+    IMU& imu; // reference to the IMU instance
+
+    float kp = 0.0f; // proportional gain
+    float ki = 0.0f; // integral gain
     Quaternion q; // estimated orientation
-    float eInt[3]; // integral error
+    float eInt[3] = {0.0f, 0.0f, 0.0f}; // integral error
 
     public:
 
+    explicit MahonyFilter(IMU& imu);
 
-    IMU& imu; // reference to the IMU instance
+    // Ground: accelerometer correction on. Flight: set both to 0.
+    void setGains(float kp, float ki);
 
-     Quaternion getQuaternion() const {
+    // Call once per loop after imu.update(); dt in seconds
+    void update(float dt);
+
+    Quaternion getQuaternion() const {
         return q;
     }
 
-    // Find the angle from the quaternion
-    float roll, pitch, yaw;
-
-    float getEulers(float roll, float pitch);
-
-
-    roll  = atan2(2 * (q.getscalar()*q.getq1() + q.getq2()*q.getq3()), 1 - 2 * (q.getq1()*q.getq1() + q.getq2()*q.getq2()));
-    pitch = asin (2 * (q.getscalar()*q.getq2() - q.getq3()*q.getq1()));
-    yaw   = atan2(2 * (q.getscalar()*q.getq3() + q.getq1()*q.getq2()), 1 - 2 * (q.getq2()*q.getq2() + q.getq3()*q.getq3()));
+    // Degrees. roll = rotation about x, pitch = rotation about y (these two are
+    // the rocket's tilt), yaw = rotation about z (the rocket spinning on its axis).
+    void getEulers(float& roll, float& pitch, float& yaw) const;
 
 };
 

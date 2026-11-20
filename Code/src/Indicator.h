@@ -3,46 +3,51 @@
 #include <Arduino.h>
 #include "pins.h"
 
-// Have a blink, turn on, and turn off functionality for each LED
-// The LED class encapsulates the behavior of an individual LED, including its pin assignment, current state, and timing for blinking.
-// You assign the pin for the LED when creating an instance of this class.
+// LED and Buzzer are non-blocking: blink()/beep() never call delay(), so they
+// can't stall the control loop. Call update() once per loop to drive them.
 
 class LED {
 
     public:
 
-    LED();
+    explicit LED(int pin) : _pin(pin) {}
 
-    int pinBlue = BlueLED;
-    int pinWhite = WhiteLED;
+    void begin();
+    void on();
+    void off();
 
-    LED(int pin);
-    void on(int &LEDPin);
-    void off(int &LEDPin);
-    void blink(int &LEDPin, int interval = 500);
+    // Blink with the given period (ms); keeps blinking until on() or off()
+    void blink(unsigned long interval = 500);
+    void update();
 
 private:
     int _pin;
-    unsigned long _lastUpdate;
-    bool _state;
-    int interval = 500; // Interval for blinking in milliseconds
+    unsigned long _lastUpdate = 0;
+    unsigned long _interval = 0; // 0 = not blinking
+    bool _state = false;
+
+    void write(bool state);
 };
 
+// Written for an active buzzer (makes its own tone when the pin is HIGH).
 class Buzzer {
 
     public:
 
-    Buzzer();
-    int interval = 500; // Interval for beeping in milliseconds
-    Buzzer(int pin);
+    explicit Buzzer(int pin = BuzzerPin) : _pin(pin) {}
+
+    void begin();
     void on();
     void off();
-    void beep();
+
+    // Sound for `duration` ms, then turn off automatically in update()
+    void beep(unsigned long duration = 500);
+    void update();
 
 private:
     int _pin;
-    unsigned long _lastUpdate;
-    bool _state;
+    unsigned long _offAt = 0;
+    bool _state = false;
 
 };
 

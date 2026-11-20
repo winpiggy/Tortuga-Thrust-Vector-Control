@@ -21,6 +21,23 @@ bool IMU::begin(){
 }
 
 
+void IMU::calibrateGyro(int samples){
+    float sumX = 0.0f, sumY = 0.0f, sumZ = 0.0f;
+
+    for (int i = 0; i < samples; i++) {
+        imu.getEvent(&a, &g, &temp);
+        sumX += g.gyro.x;
+        sumY += g.gyro.y;
+        sumZ += g.gyro.z;
+        delay(2);
+    }
+
+    gyroBiasX = sumX / samples;
+    gyroBiasY = sumY / samples;
+    gyroBiasZ = sumZ / samples;
+}
+
+
 void IMU::update(){
     imu.getEvent(&a, &g, &temp);
 }
@@ -34,13 +51,12 @@ void IMU::getAcceleration(float &x, float &y, float &z){
 
 
 void IMU::getGyroscope(float &x, float &y, float &z){
-    x = g.gyro.x;
-    y = g.gyro.y;
-    z = g.gyro.z;
+    x = g.gyro.x - gyroBiasX;
+    y = g.gyro.y - gyroBiasY;
+    z = g.gyro.z - gyroBiasZ;
 }
 
 
 float IMU::getTemperature(){
     return temp.temperature;
 }
-

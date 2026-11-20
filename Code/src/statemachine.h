@@ -1,11 +1,11 @@
 #ifndef STATEMACHINE_H
 #define STATEMACHINE_H
 
-#include "baro.h"
 #include "IMU.h"
 #include "pins.h"
+#include <Arduino.h>
 
-enum State {
+enum class State {
     IDLE,
     ARMED,
     LAUNCH,
@@ -13,6 +13,8 @@ enum State {
     DESCENT,
     LANDED
 };
+
+const char* stateName(State state);
 
 
 class StateMachine {
@@ -23,24 +25,29 @@ class StateMachine {
 
     State currentState = State::IDLE;
 
-   
+    // Timers for conditions that must hold for a while (0 = not currently true)
+    unsigned long uprightSince = 0;
+    unsigned long launchSince = 0;
+    unsigned long landedSince = 0;
+
+    float maxAltitude = 0.0f;      // highest altitude seen, for apogee detection
+    float landedRefAltitude = 0.0f; // altitude at the start of the landed check
+
+    // Each returns true once its condition has held for the configured time
+    bool isUprightDetected(unsigned long now);
+    bool isLaunchDetected(unsigned long now);
+    bool isApogeeDetected(float altitude);
+    bool isLandedDetected(float altitude, unsigned long now);
 
     public:
 
-
-
     explicit StateMachine(IMU &imuRef) : imu(imuRef) {}
 
-    StateMachine() = default;
+    State getState() const { return currentState; }
 
-    void updateState(float altitude, float pitch, float yaw, bool launchDetected, bool landedDetected, bool uprightDetected);
-    
-    bool isLaunchDetected();
-    bool isLandedDetected();
-    bool isUprightDetected();
+    // Call once per loop after imu.update(). altitude = meters above the pad.
+    void update(float altitude);
 
-
-    
 };
 
 #endif // STATEMACHINE_H

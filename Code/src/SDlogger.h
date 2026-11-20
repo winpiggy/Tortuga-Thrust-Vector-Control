@@ -11,17 +11,26 @@ class SDlogger {
 
         int chipSelect = BUILTIN_SDCARD;
         File logFile;
-        
+        unsigned long lastFlush = 0;
 
     public:
-        SDlogger(int chipSelectPin);
+        explicit SDlogger(int chipSelectPin = BUILTIN_SDCARD) : chipSelect(chipSelectPin) {}
+
+        // Start the SD card; returns false if no card is found
         bool begin();
 
-        void logData(const String& data);
+        // Opens a new numbered file (e.g. FLIGHT00.CSV, FLIGHT01.CSV...) so old
+        // flights are never overwritten. Returns 0 on success, -1 on failure.
+        int createLogFile(const char* baseName);
 
-        int createLogFile(const char* filename);
-        int updateLogFile(const char* filename);
+        // Writes one line. Data is written to the card every logFlushMs.
+        void logData(const char* line);
+        void logData(const String& line);
 
+        // Force buffered data onto the card now
+        void flush();
+
+        bool isOpen() { return logFile; }
         int getchipSelectPin() const { return chipSelect; }
 
 };

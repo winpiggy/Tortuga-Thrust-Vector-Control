@@ -2,70 +2,111 @@
 #include "statemachine.h"
 #include "IMU.h"
 #include "setup.h"
+#include <math.h>
 
-void StateMachine::updateState(float altitude, float pitch, float yaw, bool launchDetected, bool landedDetected, bool uprightDetected) {
-    // Update the state based on the current conditions
+const char* stateName(State state) {
+    switch (state) {
+        case State::IDLE:    return "IDLE";
+        case State::ARMED:   return "ARMED";
+        case State::LAUNCH:  return "LAUNCH";
+        case State::FLIGHT:  return "FLIGHT";
+        case State::DESCENT: return "DESCENT";
+        case State::LANDED:  return "LANDED";
+    }
+    return "UNKNOWN";
+}
+
+void StateMachine::update(float altitude) {
+    const unsigned long now = millis();
+
     switch(currentState) {
         case State::IDLE:
-            if (uprightDetected) {
+            if (isUprightDetected(now)) {
                 currentState = State::ARMED;
             }
             break;
 
         case State::ARMED:
-            if (launchDetected) {
+            if (isLaunchDetected(now)) {
                 currentState = State::LAUNCH;
             }
             break;
 
         case State::LAUNCH:
             if (altitude > altitudeThreshold) {
+                maxAltitude = altitude;
                 currentState = State::FLIGHT;
             }
             break;
 
         case State::FLIGHT:
-            if (landedDetected) {
+            if (isApogeeDetected(altitude)) {
                 currentState = State::DESCENT;
             }
             break;
 
         case State::DESCENT:
-            if (landedDetected) {
+            if (isLandedDetected(altitude, now)) {
                 currentState = State::LANDED;
             }
             break;
 
         case State::LANDED:
-            // Remain in LANDED state until reset or new launch
+            // Remain in LANDED state until reset
             break;
     }
 }
 
-bool StateMachine::isLaunchDetected() {
+bool StateMachine::isUprightDetected(unsigned long now) {
     float ax, ay, az;
-    imu.getAcceleration(ax, ay, az);   // fills ax/ay/az
-    if (currentState == State::ARMED && az > launchThreshold) {
-        return true;
-    } else {
+    imu.getAcceleration(ax, ay, az);
+
+    // Angle between the z axis (up the rocket) and the measured gravity vector
+    float aNorm = sqrtf(ax * ax + ay * ay + az * az);
+    bool upright = false;
+    if (aNorm > 0.0f && az > 0.0f) {
+        float tiltDeg = acosf(az / aNorm) * 180.0f / PI;
+        upright = tiltDeg < uprightToleranceDeg;
+    }
+
+    if (!upright) {
+        uprightSince = 0;
         return false;
     }
-};
-
-bool StateMachine::isUprightDetected() {
-    float ax, ay, az;
-    imu.getAcceleration(ax, ay, az);  
-    // Check if the rocket is upright based on the accelerometer readings
-    if (currentState == State::IDLE && ax < 0.1f && ax > -0.1f && ay < 0.1f && ay > -0.1f) { // Assuming z-axis points upwards
-        return true;
-    } else {
-        return false;
+    if (uprightSince == 0) {
+        uprightSince = now;
     }
-};
-
-if (currentState == State::ASCENT || currentState == State::DESCENT) {
-    float kp = 0.0f; // Proportional gain
-    float ki = 0.0f; // Integral gain
+    return now - uprightSince >= uprightHoldMs;
 }
 
+bool StateMachine::isLaunchDetected(unsigned long now) {
+    float ax, ay, az;
+    imu.getAcceleration(ax, ay, az);
 
+    if (az <= launchThreshold) {
+        launchSince = 0;
+        return false;
+    }
+    if (launchSince == 0) {
+        launchSince = now;
+    }
+    return now - launchSince >= launchHoldMs;
+}
+
+bool StateMachine::isApogeeDetected(float altitude) {
+    if (altitude > maxAltitude) {
+        maxAltitude = altitude;
+    }
+    return altitude < maxAltitude - apogeeDrop;
+}
+
+bool StateMachine::isLandedDetected(float altitude, unsigned long now) {
+    // Landed = altitude has stopped changing. Under a parachute the rocket
+    // falls several meters per second, so it can't stay in a 1 m band for 3 s.
+    if (landedSince == 0 || fabsf(altitude - landedRefAltitude) > landedAltitudeBand) {
+        landedSince = now;
+        landedRefAltitude = altitude;
+        return false;
+    }
+    return now - landedSince >= landedHoldMs;
+}

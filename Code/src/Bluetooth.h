@@ -6,42 +6,32 @@
 
 class Bluetooth {
 
-    private: 
+    private:
         int txPin = TXD;
         int rxPin = RXD;
         int statePin = STATE;
 
         HardwareSerial &serial;
-    
+
 
     public:
 
-    Bluetooth(HardwareSerial &port) : serial(port) {}
+    explicit Bluetooth(HardwareSerial &port) : serial(port) {}
 
     enum class BluetoothState {
         DISCONNECTED,
         CONNECTED
     };
 
+    // Most HC-05 / HM-10 style modules use 9600 baud by default
+    void begin(unsigned long baud = 9600);
 
-    BluetoothState getState() {
+    // Reads the module's STATE pin, which is HIGH while a device is connected
+    BluetoothState getState();
+    bool isConnected();
 
-        while(serial.available()) {
-            char c = serial.read();
-            if (c == 'C') {
-                return BluetoothState::CONNECTED;
-            } else if (c == 'D') {
-                return BluetoothState::DISCONNECTED;
-            }
-        }
-    }
+    HardwareSerial &port() { return serial; }
 };
-
-
-
-
-
-
 
 
 #endif // BLUETOOTH_H

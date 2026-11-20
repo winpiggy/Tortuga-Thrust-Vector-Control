@@ -4,7 +4,7 @@
 #include <Wire.h>
 #include "pins.h"
 #include <Adafruit_BME280.h>
-#include "Setup.h"
+#include "setup.h"
 
 class BME {
 

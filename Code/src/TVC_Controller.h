@@ -9,17 +9,38 @@ class ServoController {
 
 
     private:
-    
+
         int Pitch = PitchPin;
         int Yaw = YawPin;
 
-    public: 
+        Servo servoPitch;
+        Servo servoYaw;
 
-        
-        void getPitchPin(int PitchPin);
-        void getYawPin(int YawPin);
+        float pitchOffset = pitch_offset;
+        float yawOffset = yaw_offset;
+        float pitchRatio = pitch_ratio;
+        float yawRatio = yaw_ratio;
 
-        ServoController();
+        float minPitch = min_pitch;
+        float maxPitch = max_pitch;
+        float minYaw = min_yaw;
+        float maxYaw = max_yaw;
+
+        float centerPitch = 0.0f;
+        float centerYaw = 0.0f;
+
+    public:
+
+        ServoController() = default;
+
+        // Call before begin() to override the default pins
+        void setPitchPin(int pitchPin);
+        void setYawPin(int yawPin);
+
+        // Attach the servos; call from setup()
+        void begin();
+
+        // Angles are gimbal angles in degrees; limits, ratio and offset are applied
         void setPitch(float angle);
         void setYaw(float angle);
 
