@@ -30,7 +30,9 @@ class StateMachine {
     unsigned long launchSince = 0;
     unsigned long landedSince = 0;
 
-    float maxAltitude = 0.0f;      // highest altitude seen, for apogee detection
+    bool uprightReady = false;     // upright long enough that arming is allowed
+
+    float maxAltitude = 0.0f;     // highest altitude seen, for apogee detection
     float landedRefAltitude = 0.0f; // altitude at the start of the landed check
 
     // Each returns true once its condition has held for the configured time
@@ -47,6 +49,13 @@ class StateMachine {
 
     // Call once per loop after imu.update(). altitude = meters above the pad.
     void update(float altitude);
+
+    // Arming is manual (e.g. a Bluetooth "ARM" command). arm() only succeeds
+    // from IDLE after the rocket has been upright for uprightHoldMs.
+    bool arm();
+    // Back to IDLE. Only allowed while ARMED (never once launched).
+    bool disarm();
+    bool isUprightReady() const { return uprightReady; }
 
 };
 

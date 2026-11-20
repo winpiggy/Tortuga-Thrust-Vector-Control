@@ -13,6 +13,9 @@ class Bluetooth {
 
         HardwareSerial &serial;
 
+        char lineBuffer[32];
+        size_t lineLength = 0;
+
 
     public:
 
@@ -29,6 +32,13 @@ class Bluetooth {
     // Reads the module's STATE pin, which is HIGH while a device is connected
     BluetoothState getState();
     bool isConnected();
+
+    // Non-blocking: reads whatever bytes are waiting and returns a complete
+    // command (upper-cased, no line ending) once a '\n' or '\r' arrives.
+    // Returns nullptr if no full line is ready yet. Call every loop.
+    const char* readCommand();
+
+    void println(const char* message) { serial.println(message); }
 
     HardwareSerial &port() { return serial; }
 };

@@ -10,6 +10,7 @@
 #include "TVC_Controller.h"
 #include "SDlogger.h"
 #include "Indicator.h"
+#include "Bluetooth.h"
 
 // ---------- Hardware objects ----------
 // These are global so they exist for the whole program. (Objects created
@@ -23,6 +24,7 @@ SDlogger logger;
 LED blueLED(BlueLED);
 LED whiteLED(WhiteLED);
 Buzzer buzzer(BuzzerPin);
+Bluetooth bluetooth(bleSerial);
 
 // PID output is a gimbal angle, so its limit is the gimbal's travel
 PID pitchPID(pitch_kp, pitch_ki, pitch_kd, max_pitch);
@@ -60,6 +62,37 @@ void showState(State state) {
     }
 }
 
+// Send a reply to the phone and echo it on USB for debugging
+void reply(const char* message) {
+    bluetooth.println(message);
+    Serial.println(message);
+}
+
+// Commands sent from the phone over Bluetooth (one per line):
+//   ARM     IDLE -> ARMED, only if the rocket has been upright for uprightHoldMs
+//   DISARM  ARMED -> IDLE
+//   STATUS  report the current state
+void handleBluetoothCommand(const char* command) {
+    if (strcmp(command, "ARM") == 0) {
+        if (stateMachine.arm()) {
+            reply("OK ARMED");
+        } else if (stateMachine.getState() != State::IDLE) {
+            reply("ERR not in IDLE");
+        } else {
+            reply("ERR not upright");
+        }
+    } else if (strcmp(command, "DISARM") == 0) {
+        reply(stateMachine.disarm() ? "OK IDLE" : "ERR not ARMED");
+    } else if (strcmp(command, "STATUS") == 0) {
+        char message[48];
+        snprintf(message, sizeof(message), "STATE %s upright=%d",
+                 stateName(stateMachine.getState()), stateMachine.isUprightReady());
+        reply(message);
+    } else {
+        reply("ERR unknown command (ARM, DISARM, STATUS)");
+    }
+}
+
 void setup() {
 
     // Initialize serial
@@ -70,6 +103,8 @@ void setup() {
     whiteLED.begin();
     buzzer.begin();
     whiteLED.on(); // white = starting up
+
+    bluetooth.begin();
 
     // Servos straight before anything else moves
     servos.begin();
@@ -144,6 +179,12 @@ void loop(){
 
     // ---------- State machine ----------
     stateMachine.update(altitudeAGL);
+
+    // ---------- Bluetooth commands ----------
+    const char* command = bluetooth.readCommand();
+    if (command != nullptr) {
+        handleBluetoothCommand(command);
+    }
     state = stateMachine.getState();
 
     if (state != lastState) {
